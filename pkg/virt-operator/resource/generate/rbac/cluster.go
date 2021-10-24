@@ -143,6 +143,7 @@ func newAdminClusterRole() *rbacv1.ClusterRole {
 					"virtualmachineinstances/removevolume",
 					"virtualmachineinstances/freeze",
 					"virtualmachineinstances/unfreeze",
+					"virtualmachineinstances/softreboot",
 				},
 				Verbs: []string{
 					"update",
@@ -233,6 +234,7 @@ func newEditClusterRole() *rbacv1.ClusterRole {
 					"virtualmachineinstances/removevolume",
 					"virtualmachineinstances/freeze",
 					"virtualmachineinstances/unfreeze",
+					"virtualmachineinstances/softreboot",
 				},
 				Verbs: []string{
 					"update",

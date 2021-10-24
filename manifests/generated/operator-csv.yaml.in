@@ -346,6 +346,7 @@ spec:
           - virtualmachineinstances/removevolume
           - virtualmachineinstances/freeze
           - virtualmachineinstances/unfreeze
+          - virtualmachineinstances/softreboot
           verbs:
           - update
           - get
@@ -557,6 +558,7 @@ spec:
           - virtualmachineinstances/removevolume
           - virtualmachineinstances/freeze
           - virtualmachineinstances/unfreeze
+          - virtualmachineinstances/softreboot
           verbs:
           - update
         - apiGroups:
@@ -696,6 +698,7 @@ spec:
           - virtualmachineinstances/removevolume
           - virtualmachineinstances/freeze
           - virtualmachineinstances/unfreeze
+          - virtualmachineinstances/softreboot
           verbs:
           - update
         - apiGroups:
@@ -757,6 +760,7 @@ spec:
           - virtualmachineinstances/removevolume
           - virtualmachineinstances/freeze
           - virtualmachineinstances/unfreeze
+          - virtualmachineinstances/softreboot
           verbs:
           - update
         - apiGroups:
