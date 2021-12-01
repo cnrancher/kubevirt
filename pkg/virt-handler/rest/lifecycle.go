@@ -23,19 +23,23 @@ import (
 
 	"github.com/emicklei/go-restful"
 
+	k8sv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
 
 	"kubevirt.io/client-go/log"
 	cmdclient "kubevirt.io/kubevirt/pkg/virt-handler/cmd-client"
 )
 
 type LifecycleHandler struct {
+	recorder     record.EventRecorder
 	vmiInformer  cache.SharedIndexInformer
 	virtShareDir string
 }
 
-func NewLifecycleHandler(vmiInformer cache.SharedIndexInformer, virtShareDir string) *LifecycleHandler {
+func NewLifecycleHandler(recorder record.EventRecorder, vmiInformer cache.SharedIndexInformer, virtShareDir string) *LifecycleHandler {
 	return &LifecycleHandler{
+		recorder:     recorder,
 		vmiInformer:  vmiInformer,
 		virtShareDir: virtShareDir,
 	}
@@ -150,6 +154,38 @@ func (lh *LifecycleHandler) UnfreezeHandler(request *restful.Request, response *
 		response.WriteError(http.StatusBadRequest, err)
 	}
 
+	response.WriteHeader(http.StatusAccepted)
+}
+
+func (lh *LifecycleHandler) SoftRebootHandler(request *restful.Request, response *restful.Response) {
+	vmi, code, err := getVMI(request, lh.vmiInformer)
+	if err != nil {
+		log.Log.Object(vmi).Reason(err).Error("Failed to retrieve VMI")
+		response.WriteError(code, err)
+		return
+	}
+
+	sockFile, err := cmdclient.FindSocketOnHost(vmi)
+	if err != nil {
+		log.Log.Object(vmi).Reason(err).Error("Failed to detect cmd client")
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	client, err := cmdclient.NewClient(sockFile)
+	if err != nil {
+		log.Log.Object(vmi).Reason(err).Error("Failed to connect cmd client")
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+
+	err = client.SoftRebootVirtualMachine(vmi)
+	if err != nil {
+		log.Log.Object(vmi).Reason(err).Error("Failed to soft reboot VMI")
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+
+	lh.recorder.Eventf(vmi, k8sv1.EventTypeNormal, "SoftRebooted", "VirtualMachineInstance soft rebooted")
 	response.WriteHeader(http.StatusAccepted)
 }
 
